@@ -1,6 +1,6 @@
 {
     "name": "devaction/cnpja-php",
-    "description": "PHP SDK para a API CNPJá — consulta CNPJ, CEP, Receita Federal, Simples Nacional, CCC e SUFRAMA.",
+    "description": "PHP SDK for the CNPJá API — CNPJ, ZIP, RFB, Simples Nacional, CCC and SUFRAMA lookups.",
     "keywords": ["cnpj", "cnpja", "sdk", "php", "laravel"],
     "license": "MIT",
     "authors": [
