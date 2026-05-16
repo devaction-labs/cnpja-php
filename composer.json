@@ -1,0 +1,67 @@
+{
+    "name": "devaction/cnpja-php",
+    "description": "PHP SDK para a API CNPJá — consulta CNPJ, CEP, Receita Federal, Simples Nacional, CCC e SUFRAMA.",
+    "keywords": ["cnpj", "cnpja", "sdk", "php", "laravel"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Alex Nogueira",
+            "email": "alex@devaction.com.br"
+        }
+    ],
+    "require": {
+        "php": "^8.3",
+        "saloonphp/saloon": "^4.0"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.29.0",
+        "orchestra/testbench": "^11.1",
+        "pestphp/pest": "^5.0.0",
+        "pestphp/pest-plugin-type-coverage": "^5.0.0",
+        "phpstan/phpstan": "^2.1.49",
+        "rector/rector": "^2.4.2",
+        "symfony/var-dumper": "^8.0.8"
+    },
+    "autoload": {
+        "psr-4": {
+            "Cnpja\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Cnpja\\Laravel\\CnpjaServiceProvider"
+            ],
+            "aliases": {
+                "Cnpja": "Cnpja\\Laravel\\Facades\\Cnpja"
+            }
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "config": {
+        "sort-packages": true,
+        "preferred-install": "dist",
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "scripts": {
+        "lint": "pint",
+        "refactor": "rector",
+        "test:lint": "pint --test",
+        "test:unit": "pest --coverage",
+        "test:types": "phpstan",
+        "test:refactor": "rector --dry-run",
+        "test": [
+            "@test:lint",
+            "@test:unit",
+            "@test:types"
+        ]
+    }
+}
