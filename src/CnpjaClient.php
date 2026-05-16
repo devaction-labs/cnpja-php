@@ -98,7 +98,8 @@ class CnpjaClient
     /**
      * Returns a PNG aerial map image of the establishment's address.
      *
-     * @param array{width?: int, height?: int, scale?: int, zoom?: int, type?: string} $options
+     * @param  array{width?: int, height?: int, scale?: int, zoom?: int, type?: string}  $options
+     *
      * @throws CnpjaException
      * @throws FatalRequestException
      */
@@ -110,7 +111,8 @@ class CnpjaClient
     /**
      * Returns a PNG street-view image of the establishment's address.
      *
-     * @param array{width?: int, height?: int, fov?: int} $options
+     * @param  array{width?: int, height?: int, fov?: int}  $options
+     *
      * @throws CnpjaException
      * @throws FatalRequestException
      */
@@ -166,7 +168,8 @@ class CnpjaClient
     /**
      * Returns the RFB certificate as raw PDF bytes.
      *
-     * @param string|null $pages Pages to include: REGISTRATION, MEMBERS (comma-separated).
+     * @param  string|null  $pages  Pages to include: REGISTRATION, MEMBERS (comma-separated).
+     *
      * @throws CnpjaException
      * @throws FatalRequestException
      */
