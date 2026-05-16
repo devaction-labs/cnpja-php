@@ -6,7 +6,7 @@ Construído com [Saloon v4](https://docs.saloon.dev) e suporte nativo ao Laravel
 
 ## Requisitos
 
-- PHP 8.2+
+- PHP 8.4+
 - Composer
 
 ## Instalação
@@ -38,7 +38,7 @@ use Cnpja\CnpjaClient;
 
 $client = new CnpjaClient('sua-chave-api');
 
-$office = $client->consultaCnpj('37335118000180');
+$office = $client->getOffice('37335118000180');
 
 echo $office->taxId;            // "37335118000180"
 echo $office->alias;            // "CNPJA"
@@ -53,7 +53,7 @@ echo $office->phones[0]->area;  // "11"
 ```php
 use Cnpja\Laravel\Facades\Cnpja;
 
-$office = Cnpja::consultaCnpj('37335118000180');
+$office = Cnpja::getOffice('37335118000180');
 ```
 
 ### Laravel (Injeção de Dependência)
@@ -65,7 +65,7 @@ class EmpresaController extends Controller
 {
     public function show(CnpjaClient $cnpja, string $cnpj)
     {
-        $office = $cnpja->consultaCnpj($cnpj);
+        $office = $cnpja->getOffice($cnpj);
 
         return response()->json([
             'nome'     => $office->company?->name,
@@ -83,7 +83,7 @@ class EmpresaController extends Controller
 ### Créditos
 
 ```php
-$saldo = $client->consultaSaldo();
+$saldo = $client->getCredit();
 
 $saldo->perpetual;   // int — créditos permanentes
 $saldo->transient;   // int — créditos temporários
@@ -94,7 +94,7 @@ $saldo->transient;   // int — créditos temporários
 ### CEP
 
 ```php
-$zip = $client->consultaCep('01452922');
+$zip = $client->getZip('01452922');
 
 $zip->code;          // "01452922"
 $zip->city;          // "São Paulo"
@@ -110,7 +110,7 @@ $zip->updated;       // "2024-06-05T17:52:39.136Z"
 ### Empresa (8 primeiros dígitos do CNPJ)
 
 ```php
-$company = $client->consultaEmpresa('37335118');
+$company = $client->getCompany('37335118');
 
 $company->id;                    // 37335118
 $company->name;                  // "CNPJA TECNOLOGIA LTDA"
@@ -136,16 +136,16 @@ foreach ($company->members as $member) {
 #### Consulta simples
 
 ```php
-$office = $client->consultaCnpj('37335118000180');
+$office = $client->getOffice('37335118000180');
 ```
 
 #### Com parâmetros opcionais
 
 ```php
-use Cnpja\Params\ConsultaCnpjParams;
+use Cnpja\Params\GetOfficeParams;
 use Cnpja\Params\CacheParams;
 
-$office = $client->consultaCnpj('37335118000180', new ConsultaCnpjParams(
+$office = $client->getOffice('37335118000180', new GetOfficeParams(
     simples: true,           // +1 crédito — inclui Simples/MEI
     simplesHistory: true,    // +1 crédito — inclui histórico Simples/MEI
     registrations: 'BR',     // +1 crédito — inscrições estaduais (BR = todas as UFs)
@@ -223,9 +223,9 @@ $office->links?->simplesCertificate;    // URL do PDF
 #### Pesquisa de CNPJs
 
 ```php
-use Cnpja\Params\PesquisaCnpjParams;
+use Cnpja\Params\SearchOfficesParams;
 
-$resultado = $client->pesquisaCnpj(new PesquisaCnpjParams(
+$resultado = $client->searchOffices(new SearchOfficesParams(
     aliasIn: 'teuto',
     stateIn: 'SP,RJ',
     statusIn: '2',          // 2 = Ativa
@@ -238,7 +238,7 @@ $resultado->next;           // token para próxima página
 $resultado->records;        // OfficeDto[]
 
 // Paginação
-$pagina2 = $client->pesquisaCnpj(new PesquisaCnpjParams(
+$pagina2 = $client->searchOffices(new SearchOfficesParams(
     token: $resultado->next,
 ));
 ```
@@ -247,8 +247,8 @@ $pagina2 = $client->pesquisaCnpj(new PesquisaCnpjParams(
 
 ```php
 // Retornam string com bytes PNG
-$png = $client->mapaAereo('37335118000180', ['zoom' => 17, 'width' => 640]);
-$png = $client->visaoDaRua('37335118000180', ['fov' => 90, 'width' => 640]);
+$png = $client->getOfficeMap('37335118000180', ['zoom' => 17, 'width' => 640]);
+$png = $client->getOfficeStreetView('37335118000180', ['fov' => 90, 'width' => 640]);
 
 // Salvar em disco
 file_put_contents('mapa.png', $png);
@@ -259,10 +259,10 @@ file_put_contents('mapa.png', $png);
 ### Receita Federal
 
 ```php
-use Cnpja\Params\ConsultaRfbParams;
+use Cnpja\Params\GetRfbParams;
 use Cnpja\Params\CacheParams;
 
-$rfb = $client->consultaRfb('37335118000180', new ConsultaRfbParams(
+$rfb = $client->getRfb('37335118000180', new GetRfbParams(
     cache: new CacheParams(strategy: 'CACHE_IF_ERROR'),
 ));
 
@@ -277,7 +277,7 @@ $rfb->address->city;        // "São Paulo"
 $rfb->members[0]->person->name;  // "João Silva"
 
 // PDF do comprovante (bytes brutos)
-$pdf = $client->comprovanteRfb('37335118000180', pages: 'REGISTRATION,MEMBERS');
+$pdf = $client->getRfbCertificate('37335118000180', pages: 'REGISTRATION,MEMBERS');
 file_put_contents('rfb.pdf', $pdf);
 ```
 
@@ -286,10 +286,10 @@ file_put_contents('rfb.pdf', $pdf);
 ### Simples Nacional e MEI
 
 ```php
-use Cnpja\Params\ConsultaSimplesParams;
+use Cnpja\Params\GetSimplesParams;
 use Cnpja\Params\CacheParams;
 
-$simples = $client->consultaSimples('37335118000180', new ConsultaSimplesParams(
+$simples = $client->getSimples('37335118000180', new GetSimplesParams(
     history: true,           // +1 crédito — inclui histórico de períodos
     cache: new CacheParams(strategy: 'CACHE_IF_ERROR'),
 ));
@@ -307,7 +307,7 @@ foreach ($simples->simples->history as $entry) {
 }
 
 // PDF do comprovante
-$pdf = $client->comprovanteSimples('37335118000180');
+$pdf = $client->getSimplesCertificate('37335118000180');
 ```
 
 ---
@@ -315,10 +315,10 @@ $pdf = $client->comprovanteSimples('37335118000180');
 ### CCC (Cadastro Centralizado de Contribuintes)
 
 ```php
-use Cnpja\Params\ConsultaCccParams;
+use Cnpja\Params\GetCccParams;
 use Cnpja\Params\CacheParams;
 
-$ccc = $client->consultaCcc('37335118000180', 'BR', new ConsultaCccParams(
+$ccc = $client->getCcc('37335118000180', 'BR', new GetCccParams(
     cache: new CacheParams(strategy: 'CACHE_IF_ERROR'),
 ));
 
@@ -335,7 +335,7 @@ foreach ($ccc->registrations as $reg) {
 }
 
 // PDF do comprovante
-$pdf = $client->comprovanteCcc('37335118000180', state: 'SP');
+$pdf = $client->getCccCertificate('37335118000180', state: 'SP');
 ```
 
 ---
@@ -343,10 +343,10 @@ $pdf = $client->comprovanteCcc('37335118000180', state: 'SP');
 ### SUFRAMA
 
 ```php
-use Cnpja\Params\ConsultaSuframaParams;
+use Cnpja\Params\GetSuframaParams;
 use Cnpja\Params\CacheParams;
 
-$suframa = $client->consultaSuframa('37335118000180', new ConsultaSuframaParams(
+$suframa = $client->getSuframa('37335118000180', new GetSuframaParams(
     cache: new CacheParams(strategy: 'CACHE_IF_ERROR'),
 ));
 
@@ -365,7 +365,7 @@ foreach ($suframa->incentives as $incentive) {
 }
 
 // PDF do comprovante
-$pdf = $client->comprovanteSuframa('37335118000180');
+$pdf = $client->getSuframaCertificate('37335118000180');
 ```
 
 ---
@@ -382,7 +382,7 @@ use Cnpja\Exceptions\ValidationException;
 use Cnpja\Exceptions\ServiceUnavailableException;
 
 try {
-    $office = $client->consultaCnpj('37335118000180');
+    $office = $client->getOffice('37335118000180');
 } catch (UnauthorizedException $e) {
     // 401 — chave de API inválida ou ausente
     echo $e->getMessage();
@@ -475,13 +475,13 @@ src/
 │   └── Facades/Cnpja.php
 ├── Params/                     # Objetos de parâmetros tipados
 │   ├── CacheParams.php
-│   ├── ConsultaCccParams.php
-│   ├── ConsultaCnpjParams.php
-│   ├── ConsultaRfbParams.php
-│   ├── ConsultaSimplesParams.php
-│   ├── ConsultaSuframaParams.php
-│   ├── PesquisaCnpjParams.php
-│   └── PesquisaPessoasParams.php
+│   ├── GetCccParams.php
+│   ├── GetOfficeParams.php
+│   ├── GetRfbParams.php
+│   ├── GetSimplesParams.php
+│   ├── GetSuframaParams.php
+│   ├── SearchOfficesParams.php
+│   └── SearchPersonsParams.php
 └── Requests/                   # Request classes do Saloon (1 por endpoint)
     ├── Ccc/
     ├── Company/
