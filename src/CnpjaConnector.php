@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Cnpja;
 
+use Cnpja\Exceptions\CnpjaException;
+use Cnpja\Exceptions\NotFoundException;
+use Cnpja\Exceptions\RateLimitException;
+use Cnpja\Exceptions\ServiceUnavailableException;
+use Cnpja\Exceptions\UnauthorizedException;
+use Cnpja\Exceptions\ValidationException;
 use Saloon\Http\Auth\HeaderAuthenticator;
 use Saloon\Http\Connector;
 use Saloon\Http\Response;
 use Throwable;
-use Cnpja\Exceptions\CnpjaException;
-use Cnpja\Exceptions\NotFoundException;
-use Cnpja\Exceptions\RateLimitException;
-use Cnpja\Exceptions\UnauthorizedException;
-use Cnpja\Exceptions\ValidationException;
-use Cnpja\Exceptions\ServiceUnavailableException;
 
 class CnpjaConnector extends Connector
 {

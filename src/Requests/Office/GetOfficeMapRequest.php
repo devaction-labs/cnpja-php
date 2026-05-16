@@ -12,7 +12,7 @@ class GetOfficeMapRequest extends Request
     protected Method $method = Method::GET;
 
     /**
-     * @param  array{width?: int, height?: int, scale?: int, zoom?: int, type?: string} $options
+     * @param  array{width?: int, height?: int, scale?: int, zoom?: int, type?: string}  $options
      */
     public function __construct(
         private readonly string $taxId,
@@ -31,6 +31,6 @@ class GetOfficeMapRequest extends Request
 
     protected function defaultQuery(): array
     {
-        return array_filter($this->options, fn ($v) => $v !== null);
+        return $this->options;
     }
 }

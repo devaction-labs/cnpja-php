@@ -4,7 +4,25 @@ declare(strict_types=1);
 
 namespace Cnpja;
 
-use Saloon\Http\Response;
+use Cnpja\Dto\CccDto;
+use Cnpja\Dto\CompanyDto;
+use Cnpja\Dto\CreditDto;
+use Cnpja\Dto\OfficeDto;
+use Cnpja\Dto\OfficeSearchDto;
+use Cnpja\Dto\PersonDto;
+use Cnpja\Dto\PersonSearchDto;
+use Cnpja\Dto\RfbDto;
+use Cnpja\Dto\SimplesDto;
+use Cnpja\Dto\SuframaDto;
+use Cnpja\Dto\ZipDto;
+use Cnpja\Exceptions\CnpjaException;
+use Cnpja\Params\GetCccParams;
+use Cnpja\Params\GetOfficeParams;
+use Cnpja\Params\GetRfbParams;
+use Cnpja\Params\GetSimplesParams;
+use Cnpja\Params\GetSuframaParams;
+use Cnpja\Params\SearchOfficesParams;
+use Cnpja\Params\SearchPersonsParams;
 use Cnpja\Requests\Ccc\GetCccCertificateRequest;
 use Cnpja\Requests\Ccc\GetCccRequest;
 use Cnpja\Requests\Company\GetCompanyRequest;
@@ -22,156 +40,204 @@ use Cnpja\Requests\Simples\GetSimplesRequest;
 use Cnpja\Requests\Suframa\GetSuframaCertificateRequest;
 use Cnpja\Requests\Suframa\GetSuframaRequest;
 use Cnpja\Requests\Zip\GetZipRequest;
+use Saloon\Exceptions\Request\FatalRequestException;
 
 class CnpjaClient
 {
-    private CnpjaConnector $connector;
+    private readonly CnpjaConnector $connector;
 
     public function __construct(string $apiKey)
     {
         $this->connector = new CnpjaConnector($apiKey);
     }
 
-    public function consultaSaldo(): Response
+    /**
+     * @throws CnpjaException
+     * @throws FatalRequestException
+     */
+    public function getCredit(): CreditDto
     {
-        return $this->connector->send(new GetCreditRequest())->throw();
-    }
+        $response = $this->connector->send(new GetCreditRequest)->throw();
 
-    public function consultaCep(string $code): Response
-    {
-        return $this->connector->send(new GetZipRequest($code))->throw();
-    }
-
-    public function consultaEmpresa(string $companyId): Response
-    {
-        return $this->connector->send(new GetCompanyRequest($companyId))->throw();
+        return CreditDto::fromArray($response->json());
     }
 
     /**
-     * @param  array{
-     *   simei?: bool,
-     *   simplesHistory?: bool,
-     *   registrations?: string,
-     *   geocoding?: bool,
-     *   links?: string,
-     *   strategy?: string,
-     *   maxAge?: int,
-     *   maxStale?: int,
-     *   sync?: bool,
-     * } $options
+     * @throws CnpjaException
+     * @throws FatalRequestException
      */
-    public function consultaCnpj(string $taxId, array $options = []): Response
+    public function getZip(string $code): ZipDto
     {
-        return $this->connector->send(new GetOfficeRequest($taxId, $options))->throw();
+        $response = $this->connector->send(new GetZipRequest($code))->throw();
+
+        return ZipDto::fromArray($response->json());
     }
 
     /**
-     * @param  array{width?: int, height?: int, scale?: int, zoom?: int, type?: string} $options
+     * @throws CnpjaException
+     * @throws FatalRequestException
      */
-    public function mapaAereo(string $taxId, array $options = []): Response
+    public function getCompany(string $companyId): CompanyDto
     {
-        return $this->connector->send(new GetOfficeMapRequest($taxId, $options))->throw();
+        $response = $this->connector->send(new GetCompanyRequest($companyId))->throw();
+
+        return CompanyDto::fromArray($response->json());
     }
 
     /**
-     * @param  array{width?: int, height?: int, fov?: int} $options
+     * @throws CnpjaException
+     * @throws FatalRequestException
      */
-    public function visaoDaRua(string $taxId, array $options = []): Response
+    public function getOffice(string $taxId, ?GetOfficeParams $params = null): OfficeDto
     {
-        return $this->connector->send(new GetOfficeStreetRequest($taxId, $options))->throw();
+        $response = $this->connector->send(new GetOfficeRequest($taxId, $params))->throw();
+
+        return OfficeDto::fromArray($response->json());
     }
 
     /**
-     * @param  array{
-     *   token?: string,
-     *   limit?: int,
-     *   "alias.in"?: string,
-     *   "legalNature.in"?: string,
-     *   "alias.nin"?: string,
-     *   "legalNature.nin"?: string,
-     *   "equity.gte"?: float,
-     *   "equity.lte"?: float,
-     * } $filters
+     * Returns a PNG aerial map image of the establishment's address.
+     *
+     * @param array{width?: int, height?: int, scale?: int, zoom?: int, type?: string} $options
+     * @throws CnpjaException
+     * @throws FatalRequestException
      */
-    public function pesquisaCnpj(array $filters = []): Response
+    public function getOfficeMap(string $taxId, array $options = []): string
     {
-        return $this->connector->send(new SearchOfficesRequest($filters))->throw();
-    }
-
-    public function consultaPessoa(string $personId): Response
-    {
-        return $this->connector->send(new GetPersonRequest($personId))->throw();
+        return $this->connector->send(new GetOfficeMapRequest($taxId, $options))->throw()->body();
     }
 
     /**
-     * @param  array{
-     *   token?: string,
-     *   limit?: int,
-     *   "type.in"?: string,
-     *   "name.in"?: string,
-     *   "name.nin"?: string,
-     *   "taxId.in"?: string,
-     *   "age.in"?: string,
-     *   "role.in"?: string,
-     * } $filters
+     * Returns a PNG street-view image of the establishment's address.
+     *
+     * @param array{width?: int, height?: int, fov?: int} $options
+     * @throws CnpjaException
+     * @throws FatalRequestException
      */
-    public function pesquisaPessoas(array $filters = []): Response
+    public function getOfficeStreetView(string $taxId, array $options = []): string
     {
-        return $this->connector->send(new SearchPersonsRequest($filters))->throw();
+        return $this->connector->send(new GetOfficeStreetRequest($taxId, $options))->throw()->body();
     }
 
     /**
-     * @param  array{strategy?: string, maxAge?: int, maxStale?: int, sync?: bool} $options
+     * @throws CnpjaException
+     * @throws FatalRequestException
      */
-    public function consultaRfb(string $taxId, array $options = []): Response
+    public function searchOffices(?SearchOfficesParams $params = null): OfficeSearchDto
     {
-        return $this->connector->send(new GetRfbRequest($taxId, $options))->throw();
+        $response = $this->connector->send(new SearchOfficesRequest($params))->throw();
+
+        return OfficeSearchDto::fromArray($response->json());
     }
 
     /**
-     * @param  array{pages?: string} $options
+     * @throws CnpjaException
+     * @throws FatalRequestException
      */
-    public function comprovanteRfb(string $taxId, array $options = []): Response
+    public function getPerson(string $personId): PersonDto
     {
-        return $this->connector->send(new GetRfbCertificateRequest($taxId, $options))->throw();
+        $response = $this->connector->send(new GetPersonRequest($personId))->throw();
+
+        return PersonDto::fromArray($response->json());
     }
 
     /**
-     * @param  array{history?: bool, strategy?: string, maxAge?: int, maxStale?: int, sync?: bool} $options
+     * @throws CnpjaException
+     * @throws FatalRequestException
      */
-    public function consultaSimples(string $taxId, array $options = []): Response
+    public function searchPersons(?SearchPersonsParams $params = null): PersonSearchDto
     {
-        return $this->connector->send(new GetSimplesRequest($taxId, $options))->throw();
-    }
+        $response = $this->connector->send(new SearchPersonsRequest($params))->throw();
 
-    public function comprovanteSimples(string $taxId): Response
-    {
-        return $this->connector->send(new GetSimplesCertificateRequest($taxId))->throw();
+        return PersonSearchDto::fromArray($response->json());
     }
 
     /**
-     * @param  array{strategy?: string, maxAge?: int, maxStale?: int, sync?: bool} $options
+     * @throws CnpjaException
+     * @throws FatalRequestException
      */
-    public function consultaCcc(string $taxId, string $states, array $options = []): Response
+    public function getRfb(string $taxId, ?GetRfbParams $params = null): RfbDto
     {
-        return $this->connector->send(new GetCccRequest($taxId, $states, $options))->throw();
-    }
+        $response = $this->connector->send(new GetRfbRequest($taxId, $params))->throw();
 
-    public function comprovanteCcc(string $taxId, ?string $state = null): Response
-    {
-        return $this->connector->send(new GetCccCertificateRequest($taxId, $state))->throw();
+        return RfbDto::fromArray($response->json());
     }
 
     /**
-     * @param  array{strategy?: string, maxAge?: int, maxStale?: int, sync?: bool} $options
+     * Returns the RFB certificate as raw PDF bytes.
+     *
+     * @param string|null $pages Pages to include: REGISTRATION, MEMBERS (comma-separated).
+     * @throws CnpjaException
+     * @throws FatalRequestException
      */
-    public function consultaSuframa(string $taxId, array $options = []): Response
+    public function getRfbCertificate(string $taxId, ?string $pages = null): string
     {
-        return $this->connector->send(new GetSuframaRequest($taxId, $options))->throw();
+        return $this->connector->send(new GetRfbCertificateRequest($taxId, $pages))->throw()->body();
     }
 
-    public function comprovanteSuframa(string $taxId): Response
+    /**
+     * @throws CnpjaException
+     * @throws FatalRequestException
+     */
+    public function getSimples(string $taxId, ?GetSimplesParams $params = null): SimplesDto
     {
-        return $this->connector->send(new GetSuframaCertificateRequest($taxId))->throw();
+        $response = $this->connector->send(new GetSimplesRequest($taxId, $params))->throw();
+
+        return SimplesDto::fromArray($response->json());
+    }
+
+    /**
+     * Returns the Simples Nacional / MEI certificate as raw PDF bytes.
+     *
+     * @throws CnpjaException
+     * @throws FatalRequestException
+     */
+    public function getSimplesCertificate(string $taxId): string
+    {
+        return $this->connector->send(new GetSimplesCertificateRequest($taxId))->throw()->body();
+    }
+
+    /**
+     * @throws CnpjaException
+     * @throws FatalRequestException
+     */
+    public function getCcc(string $taxId, string $states, ?GetCccParams $params = null): CccDto
+    {
+        $response = $this->connector->send(new GetCccRequest($taxId, $states, $params))->throw();
+
+        return CccDto::fromArray($response->json());
+    }
+
+    /**
+     * Returns the CCC certificate as raw PDF bytes.
+     *
+     * @throws CnpjaException
+     * @throws FatalRequestException
+     */
+    public function getCccCertificate(string $taxId, ?string $state = null): string
+    {
+        return $this->connector->send(new GetCccCertificateRequest($taxId, $state))->throw()->body();
+    }
+
+    /**
+     * @throws CnpjaException
+     * @throws FatalRequestException
+     */
+    public function getSuframa(string $taxId, ?GetSuframaParams $params = null): SuframaDto
+    {
+        $response = $this->connector->send(new GetSuframaRequest($taxId, $params))->throw();
+
+        return SuframaDto::fromArray($response->json());
+    }
+
+    /**
+     * Returns the SUFRAMA certificate as raw PDF bytes.
+     *
+     * @throws CnpjaException
+     * @throws FatalRequestException
+     */
+    public function getSuframaCertificate(string $taxId): string
+    {
+        return $this->connector->send(new GetSuframaCertificateRequest($taxId))->throw()->body();
     }
 }

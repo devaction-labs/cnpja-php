@@ -9,13 +9,12 @@ use Illuminate\Support\ServiceProvider;
 
 class CnpjaServiceProvider extends ServiceProvider
 {
+    #[\Override]
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__.'/../../config/cnpja.php', 'cnpja');
 
-        $this->app->singleton(CnpjaClient::class, function () {
-            return new CnpjaClient(config('cnpja.api_key'));
-        });
+        $this->app->singleton(CnpjaClient::class, fn () => new CnpjaClient(config('cnpja.api_key')));
     }
 
     public function boot(): void

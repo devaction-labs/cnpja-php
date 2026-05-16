@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Cnpja\Requests\Office;
 
+use Cnpja\Params\GetOfficeParams;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
 
@@ -11,22 +12,9 @@ class GetOfficeRequest extends Request
 {
     protected Method $method = Method::GET;
 
-    /**
-     * @param  array{
-     *   simei?: bool,
-     *   simplesHistory?: bool,
-     *   registrations?: string,
-     *   geocoding?: bool,
-     *   links?: string,
-     *   strategy?: string,
-     *   maxAge?: int,
-     *   maxStale?: int,
-     *   sync?: bool,
-     * } $options
-     */
     public function __construct(
         private readonly string $taxId,
-        private readonly array $options = [],
+        private readonly ?GetOfficeParams $params = null,
     ) {}
 
     public function resolveEndpoint(): string
@@ -36,6 +24,6 @@ class GetOfficeRequest extends Request
 
     protected function defaultQuery(): array
     {
-        return array_filter($this->options, fn ($v) => $v !== null && $v !== '');
+        return $this->params?->toArray() ?? [];
     }
 }

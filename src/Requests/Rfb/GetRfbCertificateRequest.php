@@ -11,12 +11,10 @@ class GetRfbCertificateRequest extends Request
 {
     protected Method $method = Method::GET;
 
-    /**
-     * @param  array{pages?: string} $options
-     */
+    /** @param string|null $pages Páginas a incluir: REGISTRATION, MEMBERS (separadas por vírgula). */
     public function __construct(
         private readonly string $taxId,
-        private readonly array $options = [],
+        private readonly ?string $pages = null,
     ) {}
 
     public function resolveEndpoint(): string
@@ -31,9 +29,12 @@ class GetRfbCertificateRequest extends Request
 
     protected function defaultQuery(): array
     {
-        return array_filter(
-            ['taxId' => $this->taxId, ...$this->options],
-            fn ($v) => $v !== null && $v !== '',
-        );
+        $query = ['taxId' => $this->taxId];
+
+        if ($this->pages !== null) {
+            $query['pages'] = $this->pages;
+        }
+
+        return $query;
     }
 }

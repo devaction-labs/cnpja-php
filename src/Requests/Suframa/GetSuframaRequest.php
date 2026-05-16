@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Cnpja\Requests\Suframa;
 
+use Cnpja\Params\GetSuframaParams;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
 
@@ -11,12 +12,9 @@ class GetSuframaRequest extends Request
 {
     protected Method $method = Method::GET;
 
-    /**
-     * @param  array{strategy?: string, maxAge?: int, maxStale?: int, sync?: bool} $options
-     */
     public function __construct(
         private readonly string $taxId,
-        private readonly array $options = [],
+        private readonly ?GetSuframaParams $params = null,
     ) {}
 
     public function resolveEndpoint(): string
@@ -26,9 +24,6 @@ class GetSuframaRequest extends Request
 
     protected function defaultQuery(): array
     {
-        return array_filter(
-            ['taxId' => $this->taxId, ...$this->options],
-            fn ($v) => $v !== null && $v !== '',
-        );
+        return array_merge(['taxId' => $this->taxId], $this->params?->toArray() ?? []);
     }
 }

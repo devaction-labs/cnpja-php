@@ -1,0 +1,10 @@
+parameters:
+    level: 5
+    paths:
+        - src
+        - tests
+    excludePaths:
+        - vendor
+    ignoreErrors:
+        - identifier: property.notFound
+          path: tests/*
