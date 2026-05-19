@@ -30,7 +30,7 @@ class GetCccCertificateRequest extends Request
     {
         return array_filter(
             ['taxId' => $this->taxId, 'state' => $this->state],
-            fn ($v) => $v !== null,
+            static fn ($v) => $v !== null,
         );
     }
 }
