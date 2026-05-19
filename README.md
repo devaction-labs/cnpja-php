@@ -148,10 +148,11 @@ use Cnpja\Params\CacheParams;
 $office = $client->getOffice('37335118000180', new GetOfficeParams(
     simples: true,           // +1 crédito — inclui Simples/MEI
     simplesHistory: true,    // +1 crédito — inclui histórico Simples/MEI
-    registrations: 'BR',     // +1 crédito — inscrições estaduais (BR = todas as UFs)
-    suframa: true,           // +1 crédito — inclui dados da SUFRAMA
-    geocoding: true,         // +1 crédito — inclui lat/long do endereço
-    links: 'RFB_CERTIFICATE,SIMPLES_CERTIFICATE',  // links de comprovantes
+    registrations: 'ALL',        // +1 crédito — inscrições estaduais (ORIGIN, ALL ou UFs)
+    registrationsSource: 'CCC', // fonte: AUTO, CCC ou SINTEGRA
+    suframa: true,               // +1 crédito — inclui dados da SUFRAMA
+    geocoding: true,             // +1 crédito — inclui lat/long do endereço
+    links: 'RFB_CERTIFICATE,SIMPLES_CERTIFICATE,CCC_CERTIFICATE,SUFRAMA_CERTIFICATE,OFFICE_MAP,OFFICE_STREET',
     cache: new CacheParams(
         strategy: 'CACHE_IF_ERROR',
         maxAge: 45,
@@ -218,6 +219,10 @@ foreach ($office->registrations as $reg) {
 // Links de comprovantes (requer links param)
 $office->links?->rfbCertificate;        // URL do PDF
 $office->links?->simplesCertificate;    // URL do PDF
+$office->links?->cccCertificate;        // URL do PDF
+$office->links?->suframaCertificate;    // URL do PDF
+$office->links?->officeMap;             // URL da imagem PNG
+$office->links?->officeStreet;          // URL da imagem PNG
 ```
 
 #### Pesquisa de CNPJs
@@ -318,7 +323,8 @@ $pdf = $client->getSimplesCertificate('37335118000180');
 use Cnpja\Params\GetCccParams;
 use Cnpja\Params\CacheParams;
 
-$ccc = $client->getCcc('37335118000180', 'BR', new GetCccParams(
+$ccc = $client->getCcc('37335118000180', 'ALL', new GetCccParams(
+    source: 'CCC',
     cache: new CacheParams(strategy: 'CACHE_IF_ERROR'),
 ));
 

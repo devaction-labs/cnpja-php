@@ -41,13 +41,8 @@ final readonly class SearchPersonsParams
             'country.id.in' => $this->countryIn,
         ];
 
-        $params = [];
-        foreach ($map as $key => $value) {
-            if ($value !== null && $value !== '') {
-                $params[$key] = $value;
-            }
-        }
-
-        return $params;
+        return array_filter($map, static function ($value) {
+            return $value !== null && $value !== '';
+        });
     }
 }
