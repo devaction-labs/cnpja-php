@@ -41,6 +41,6 @@ final readonly class SearchPersonsParams
             'country.id.in' => $this->countryIn,
         ];
 
-        return array_filter($map, static fn($value) => $value !== null && $value !== '');
+        return array_filter($map, static fn ($value) => $value !== null && $value !== '');
     }
 }
