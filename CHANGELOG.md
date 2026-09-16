@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/devaction-labs/cnpja-php/compare/v0.1.2...v0.1.3) (2026-09-16)
+
+
+### Bug Fixes
+
+* stop shipping the committed vendor/ directory in releases ([#6](https://github.com/devaction-labs/cnpja-php/issues/6)) ([f1474ce](https://github.com/devaction-labs/cnpja-php/commit/f1474ce3493075ae760e7c65347c06b6749eb74c))
+
 ## [0.1.2](https://github.com/devaction-labs/cnpja-php/compare/v0.1.1...v0.1.2) (2026-05-19)
 
 
